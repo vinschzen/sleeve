@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sleeve</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="app">
+  <div id="demo" class="lab" hidden>Demo &middot; invented library, simulated playback</div>
+
+  <!-- (01) LIBRARY -->
+  <section class="view" id="v-library">
+    <header class="g head">
+      <div class="between"><span class="lab">(Sleeve)</span><button class="lab link" id="scan-open">(Scan folder)</button></div>
+      <h1>Library</h1>
+      <div class="lab" id="lib-meta">&nbsp;</div>
+      <input id="search" type="search" placeholder="Search title, artist, album" autocomplete="off" spellcheck="false" aria-label="Search">
+      <div class="between">
+        <div class="seg" id="lib-tabs">
+          <button data-tab="tracks" aria-pressed="true">Tracks</button>
+          <button data-tab="albums" aria-pressed="false">Albums</button>
+          <button data-tab="artists" aria-pressed="false">Artists</button>
+          <button data-tab="playlists" aria-pressed="false">Playlists</button>
+        </div>
+        <button class="lab link" id="sort">(A&ndash;Z)</button>
+        <button class="lab link hi" id="pl-new" hidden>(+ New)</button>
+      </div>
+      <div id="drill" hidden>
+        <div class="between"><button class="lab link hi" id="crumb">(&larr; Library)</button><button class="lab link hi" id="drill-edit">(Edit)</button></div>
+        <div class="dh">
+          <button class="cover" id="dh-cover" aria-label="Change cover"><img id="dh-img" alt=""></button>
+          <div class="dh-t"><span class="lab" id="dh-kind"></span><h2 id="dh-title"></h2><div class="sub" id="dh-sub"></div></div>
+        </div>
+        <div class="lab hi" id="dh-meta">&nbsp;</div>
+      </div>
+      <input type="file" id="cover-file" accept="image/*" hidden>
+    </header>
+    <div class="scroll list" id="list"></div>
+  </section>
+
+  <!-- (02) STATS -->
+  <section class="view scroll" id="v-stats" hidden>
+    <header class="g head">
+      <div class="between"><span class="lab link">(Listening history)</span><button class="lab link hi" id="st-filter" hidden></button></div>
+      <h1>Stats</h1>
+      <div class="chips" id="st-range">
+        <button data-d="7" aria-pressed="false">7 days</button>
+        <button data-d="30" aria-pressed="false">30 days</button>
+        <button data-d="365" aria-pressed="true">Year</button>
+        <button data-d="0" aria-pressed="false">All time</button>
+      </div>
+    </header>
+    <div class="g tiles">
+      <div><span class="lab">Plays</span><strong id="st-plays">0</strong></div>
+      <div><span class="lab">Hours</span><strong id="st-hours">0</strong></div>
+    </div>
+    <section class="g chart"><div class="between"><span class="lab">(A) Hour of day</span><span class="lab hi" id="pk-hour"></span></div><div class="bars" id="c-hour"></div></section>
+    <section class="g chart"><div class="between"><span class="lab">(B) Day of week</span><span class="lab hi" id="pk-dow"></span></div><div class="bars" id="c-dow"></div></section>
+    <section class="g chart">
+      <div class="between"><span class="lab">(C) Time of year</span><span class="lab hi" id="pk-month"></span></div>
+      <div class="bars" id="c-month"></div>
+      <div class="chips" id="st-season">
+        <button data-m="month" aria-pressed="true">Months</button>
+        <button data-m="wetdry" aria-pressed="false">Wet / dry</button>
+        <button data-m="four" aria-pressed="false">Four seasons</button>
+      </div>
+    </section>
+    <section class="g chart"><div class="between"><span class="lab">(D) Day &times; hour</span><span class="lab hi" id="pk-punch"></span></div><div class="punch" id="c-punch"></div></section>
+    <section class="g chart"><span class="lab">(E) Most played &middot; tap one to see when you play it</span>
+      <div class="tops"><div><h3>Tracks</h3><div id="top-tracks"></div></div><div><h3>Artists</h3><div id="top-artists"></div></div><div><h3>Genres</h3><div id="top-genres"></div></div></div>
+    </section>
+    <section class="g chart">
+      <div class="between"><span class="lab">(F) Genres in collection</span><span class="lab">Drag to turn</span></div>
+      <canvas id="sphere" aria-label="Genres plotted on a sphere. Related genres sit close together."></canvas>
+      <div class="lab" id="sphere-info">Dot size = tracks owned &middot; fill = how much you play it</div>
+    </section>
+  </section>
+
+  <!-- (03) SESSION -->
+  <section class="view scroll" id="v-session" hidden>
+    <header class="g head">
+      <span class="lab link">(Listen together)</span>
+      <h1>Session</h1>
+      <p class="note">Open a temporary link to what you are playing. Your friend hears it in their browser, in step with you. Nothing is uploaded and the link stops working when the timer ends.</p>
+    </header>
+    <div class="g stack" id="se-idle">
+      <div><span class="lab">Playing</span><div class="big" id="se-track">Nothing yet</div></div>
+      <div><span class="lab">Link lasts</span>
+        <div class="chips" id="se-mins">
+          <button data-m="15" aria-pressed="false">15 min</button><button data-m="30" aria-pressed="true">30 min</button>
+          <button data-m="60" aria-pressed="false">1 hour</button><button data-m="120" aria-pressed="false">2 hours</button>
+        </div>
+      </div>
+      <button class="btn" id="se-start">Open session</button>
+    </div>
+    <div class="g stack" id="se-live" hidden>
+      <div class="between"><div><span class="lab">Ends in</span><div class="big" id="se-left">0:00</div></div><div class="right"><span class="lab">Listening</span><div class="big" id="se-guests">0</div></div></div>
+      <div><span class="lab">Link</span><div class="url" id="se-url"></div></div>
+      <button class="btn" id="se-copy">Copy link</button>
+      <button class="btn ghost" id="se-stop">End session</button>
+      <p class="note">Works for anyone on the same Wi-Fi. For a friend somewhere else, put both devices on one private network such as Tailscale.</p>
+    </div>
+  </section>
+
+  <button id="mini" hidden aria-label="Open player">
+    <i id="mini-bar"></i>
+    <span class="disc" id="mini-toggle" role="button" aria-label="Play or pause"></span>
+    <span class="rt"><b id="mini-title"></b><span id="mini-sub"></span></span>
+    <span class="lab" id="mini-time"></span>
+  </button>
+
+  <nav id="tabs">
+    <button data-view="library" aria-pressed="true"><span>(01)</span> Library</button>
+    <button data-view="stats" aria-pressed="false"><span>(02)</span> Stats</button>
+    <button data-view="session" aria-pressed="false"><span>(03)</span> Session</button>
+  </nav>
+
+  <section id="player" class="sheet" aria-label="Now playing" inert>
+    <div class="g between"><span class="lab link" id="np-queue">(Now playing)</span><span class="acts"><button class="lab link hi" id="pl-more">(More)</button><button class="lab link" id="pl-close">(Close)</button></span></div>
+    <div class="scroll grow">
+      <div class="g plate">
+        <div class="cover" id="np-cover">
+          <canvas id="np-art" width="600" height="600" aria-hidden="true"></canvas>
+          <img id="np-img" alt="Album cover" hidden>
+          <span class="tag" id="np-tier"></span>
+        </div>
+        <div class="read">
+          <div><strong id="np-khz">0</strong><span class="lab" id="np-khz-u">kHz</span></div>
+          <div><strong id="np-bit">0</strong><span class="lab">bit</span></div>
+          <div><strong id="np-kbps">0</strong><span class="lab">kbps</span></div>
+        </div>
+      </div>
+      <div class="g">
+        <h2 id="pl-title"></h2>
+        <div class="sub" id="pl-sub"></div>
+      </div>
+      <div class="g wavebox">
+        <div class="between lab"><span>(Waveform &middot; drag to seek)</span><span class="hi" id="np-level"></span></div>
+        <canvas id="np-wave" role="slider" tabindex="0" aria-label="Position in track"></canvas>
+        <div class="between lab hi"><span id="pl-cur">0:00</span><span id="np-sample"></span><span id="pl-rem">0:00</span></div>
+      </div>
+      <div class="g"><div class="ctl"><button id="pl-prev">Prev</button><button class="disc xl" id="pl-toggle">Play</button><button id="pl-next">Next</button></div></div>
+      <div class="g" id="np-specs"></div>
+      <div class="g simhead"><span class="lab">(Similar in your library)</span></div>
+      <div id="pl-similar"></div>
+    </div>
+  </section>
+
+  <section id="scan" class="sheet" aria-label="Scan a folder" inert>
+    <div class="g between"><span class="lab">(Scan folder)</span><button class="lab link" id="scan-close">(Close)</button></div>
+    <div class="g stack">
+      <h2>Add music</h2>
+      <p class="note">Point Sleeve at a folder of FLAC, DSD (DSF or DFF), MP3, ALAC, WAV, OGG or Opus files. Files stay where they are. Scanning again only reads what changed.</p>
+      <label class="lab" for="scan-path">Folder path</label>
+      <input id="scan-path" type="text" autocomplete="off" spellcheck="false" placeholder="/storage/emulated/0/Music">
+      <button class="btn" id="scan-go">Scan</button>
+      <div class="big" id="scan-count"></div>
+      <div class="lab" id="scan-msg"></div>
+    </div>
+  </section>
+
+  <div id="pop" hidden>
+    <div class="pop-bg"></div>
+    <div class="pop-panel scroll" role="dialog" aria-labelledby="pop-title">
+      <div class="between"><span class="lab" id="pop-title"></span><button class="lab link" id="pop-close">(Close)</button></div>
+      <div id="pop-body"></div>
+    </div>
+  </div>
+
+  <div id="toast" role="status" hidden></div>
+</div>
+<script src="demo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

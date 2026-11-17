@@ -1,0 +1,20 @@
+[package]
+name = "sleeve"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "sleeve_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+serde_json = "1"
+sleeve-core = { path = "../crates/core" }
+
+# Native haptics exist on phones only.
+[target.'cfg(any(target_os = "android", target_os = "ios"))'.dependencies]
+tauri-plugin-haptics = "2"

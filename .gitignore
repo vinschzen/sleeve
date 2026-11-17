@@ -1,0 +1,7 @@
+target/
+src-tauri/gen/
+*.db
+*.db-wal
+*.db-shm
+covers/
+*.jks
