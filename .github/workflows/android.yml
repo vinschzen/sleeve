@@ -15,19 +15,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
-
+      # The Ubuntu runner already ships the Android SDK; only the NDK and one platform are added.
       - name: Install the Android NDK
         run: |
-          sdkmanager "ndk;27.0.12077973" "platforms;android-34" "build-tools;34.0.0"
-          echo "NDK_HOME=$ANDROID_HOME/ndk/27.0.12077973" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          SDKM=$(ls -d "$ANDROID_SDK_ROOT"/cmdline-tools/*/bin/sdkmanager | sort -V | tail -1)
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "ndk;27.0.12077973" "platforms;android-34" "build-tools;34.0.0" > /dev/null
+          echo "NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> "$GITHUB_ENV"
+          ls "$ANDROID_SDK_ROOT/ndk"
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -67,7 +70,7 @@ jobs:
       - name: Sign
         run: |
           APK=$(find src-tauri/gen/android/app/build/outputs/apk -name "*release*.apk" | head -1)
-          TOOLS="$ANDROID_HOME/build-tools/34.0.0"
+          TOOLS="$ANDROID_SDK_ROOT/build-tools/34.0.0"
           "$TOOLS/zipalign" -f 4 "$APK" aligned.apk
           "$TOOLS/apksigner" sign --ks "$RUNNER_TEMP/sleeve.jks" --ks-pass "pass:$KS_PASS" --ks-key-alias sleeve --out Sleeve.apk aligned.apk
           "$TOOLS/apksigner" verify --print-certs Sleeve.apk | head -3
